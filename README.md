@@ -1,10 +1,10 @@
-# 🛡️ SecureProctor: Official Telemetry & Integrity Agent
+# 🛡️ InnoGuard: Official Telemetry & Integrity Agent
 
 > **CRITICAL SECURITY NOTICE:** This software is a mandatory, active proctoring and telemetry agent for all competition participants. Unauthorized modification, code tampering, or disabling of this extension constitutes a direct violation of competition rules.
 
 ## 📋 Overview
 
-SecureProctor is a lightweight browser-based telemetry agent designed to ensure a fair and transparent competition environment. It runs background monitoring tasks to capture device telemetry, active domain activity, and periodic environment snapshots, transmitting them directly to the event proctoring dashboard.
+InnoGuard is a lightweight browser-based telemetry agent designed to ensure a fair and transparent competition environment. It runs background monitoring tasks to capture device telemetry, active domain activity, and periodic environment snapshots, transmitting them directly to the event proctoring dashboard.
 
 ## ⚠️ Anti-Malpractice & Edge Monitoring Protocol
 
@@ -21,7 +21,7 @@ Because this security agent enforces strict runtime permissions, it must be load
 ### Step 1: Download & Extract
 
 1. Download the official extension package archive (`.zip`) provided by the competition administrators.
-2. **Crucial:** Extract the contents of the ZIP file into a **permanent directory** on your laptop (e.g., create a dedicated folder such as `C:\ProctorAgent` or `~/Documents/ProctorAgent`).
+2. **Crucial:** Extract the contents of the ZIP file into a **permanent directory** on your laptop (e.g., create a dedicated folder such as `C:\InnoGuard` or `~/Documents/InnoGuard`).
 
 > *Note: Do not delete, rename, or move this folder after installation. If the source folder is altered, Chrome will automatically unmount the extension.*
 
@@ -44,7 +44,7 @@ Because this security agent enforces strict runtime permissions, it must be load
 
 ### Step 5: Initial Setup & Verification
 
-1. Verify that the **SecureProctor** extension card is visible and enabled in your extensions list.
+1. Verify that the **InnoGuard** extension card is visible and enabled in your extensions list.
 2. Complete the initial registration prompt if prompted by entering your assigned Team/Device identifier.
 3. Ensure all background permissions are granted so the telemetry loop can initialize properly.
 
