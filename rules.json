@@ -22,5 +22,5 @@
   { "id": 10, "priority": 10, "action": { "type": "allow" }, "condition": { "urlFilter": "||anthropic.com", "resourceTypes": ["main_frame"] } },
   { "id": 11, "priority": 10, "action": { "type": "allow" }, "condition": { "urlFilter": "||claude.ai", "resourceTypes": ["main_frame"] } },
   { "id": 12, "priority": 10, "action": { "type": "allow" }, "condition": { "urlFilter": "||gemini.google.com", "resourceTypes": ["main_frame"] } },
-  { "id": 13, "priority": 10, "action": { "type": "allow" }, "condition": { "urlFilter": "||aistudio.google.com", "resourceTypes": ["main_frame"] } }
+  { "id": 13, "priority": 10, "action": { "type": "allow" }, "condition": { "urlFilter": "||stackblitz.com", "resourceTypes": ["main_frame"] } }
 ]
