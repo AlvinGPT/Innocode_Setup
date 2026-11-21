@@ -1,57 +1,47 @@
-# 🛡️ InnoGuard: Official Telemetry & Integrity Agent
+# 🛡️ InnoCode Strict Guardian: Official Proctoring & Telemetry Agent
 
-> **CRITICAL SECURITY NOTICE:** This software is a mandatory, active proctoring and telemetry agent for all competition participants. Unauthorized modification, code tampering, or disabling of this extension constitutes a direct violation of competition rules.
+> **CRITICAL SECURITY NOTICE:** This software is a mandatory, active proctoring and telemetry agent for all competition participants. Modifying source files, disabling Developer Mode, closing the monitored browser session, or removing/reloading this extension during the competition triggers an immediate **`OFFLINE / TAMPERED`** alert on the proctor dashboard and constitutes a direct violation of competition rules.
 
 ## 📋 Overview
+**InnoCode Strict Guardian** (v2.1) is a cloud-managed Manifest V3 browser agent designed to ensure a fair competition environment. It enforces dynamic domain whitelisting, logs visited domains and installed Chrome extensions, captures periodic randomized screen snapshots, and provides real-time proctor lockout (`DENY`) and clearance (`ALLOW`) controls.
 
-InnoGuard is a lightweight browser-based telemetry agent designed to ensure a fair and transparent competition environment. It runs background monitoring tasks to capture device telemetry, active domain activity, and periodic environment snapshots, transmitting them directly to the event proctoring dashboard.
+## ⚙️ Architecture & Features
+* **Dynamic Whitelist Enforcement:** Restricts navigation (`main_frame`) exclusively to proctor-approved domains via `chrome.declarativeNetRequest`. Any non-whitelisted URL redirects immediately to `blocked.html`.
+* **Live Heartbeat & Tamper Detection:** Sends periodic and event-driven heartbeats to the backend. If a participant closes Chrome, loses connection, or disables the extension for more than 90 seconds, the dashboard flags the device as **`OFFLINE / TAMPERED`**.
+* **Remote Disqualification (`DENY` / `ALLOW`):** Proctors can lock a participant's browser to `disqualified.html` in real time and release them back into the session once cleared.
+* **Centralized Telemetry Storage:** Uploads randomized screen captures (`.jpg`), visited domain history (`domain_logs.json`), and active Chrome extension inventories (`extensions.json`) directly to a designated Google Drive folder, viewable from the Proctor Dashboard Web UI.
 
-## ⚠️ Anti-Malpractice & Edge Monitoring Protocol
+## 🌐 Pre-Approved Competition Domains
+By default, participants may access:
+* **Search:** `google.com/search`, `duckduckgo.com`
+* **Code & Hosting:** `github.com`, `codepen.io`, `jsfiddle.net`, `stackblitz.com`, `vercel.app`, `netlify.app`
+* **AI Assistants:** `chatgpt.com`, `claude.ai`, `anthropic.com`, `gemini.google.com`
 
-Before proceeding with installation, all participants must review and understand the automated security architecture embedded within this environment:
+---
 
-* **Active Telemetry & Surveillance:** The extension operates continuous background service workers that record active browsing domains and capture randomized environment snapshots at set intervals.
-* **The Dead-Man's Switch (Heartbeat Monitoring):** Our backend infrastructure tracks a real-time, rolling heartbeat from every registered device. If a participant pauses the service worker, modifies source files, or blocks network endpoints, their device will immediately register as inactive on the proctor control panel.
-* **Zero-Tolerance Disqualification:** Any detected attempt to alter the JavaScript execution loops, manipulate allowlists, intercept network payloads, or unload the extension during competition hours will result in **immediate, unappealable disqualification**. Server-side state changes are logged independently of local machine operations.
+## 📥 Participant Installation Instructions
 
-## 📥 Installation Instructions
+Participants must load the extension locally via Google Chrome's Developer Mode before the round begins:
 
-Because this security agent enforces strict runtime permissions, it must be loaded locally via Google Chrome's developer toolkit. Follow these steps precisely before the competition officially begins:
+### Step 1: Extract the Package
+Extract the extension folder to a permanent location on your laptop (do not delete or move this folder during the event).
 
-### Step 1: Download & Extract
-
-1. Download the official extension package archive (`.zip`) provided by the competition administrators.
-2. **Crucial:** Extract the contents of the ZIP file into a **permanent directory** on your laptop (e.g., create a dedicated folder such as `C:\InnoGuard` or `~/Documents/InnoGuard`).
-
-> *Note: Do not delete, rename, or move this folder after installation. If the source folder is altered, Chrome will automatically unmount the extension.*
-
-### Step 2: Access Chrome Extensions
-
+### Step 2: Open Chrome Extensions
 1. Launch Google Chrome.
-2. Navigate to the extension manager by entering the following URL into your address bar:
-   `chrome://extensions/`
+2. Navigate to `chrome://extensions/`.
 
 ### Step 3: Enable Developer Mode
-
-1. Locate the **Developer mode** toggle switch in the top-right corner of the Extensions page.
-2. Switch **Developer mode** to the **ON** position. Additional control buttons will appear at the top of the page.
+1. Toggle **Developer mode** to **ON** in the top-right corner.
 
 ### Step 4: Load Unpacked Extension
+1. Click **Load unpacked**.
+2. Select the extracted extension directory containing `manifest.json`.
 
-1. Click the **Load unpacked** button in the top-left section.
-2. In the file picker, navigate to and select the permanent folder where you extracted the extension files (select the directory containing the `manifest.json` file).
-3. Click **Select Folder** (or **Open**).
+### Step 5: Register Your Team / Device ID
+1. When the setup popup opens (or by clicking the **InnoCode Strict Guardian** icon in the toolbar), enter your assigned **Team/Device Name** (e.g., `Team-Alpha-01`).
+2. Click **Save & Register**. Once locked in, telemetry and heartbeat monitoring begin automatically.
+3. **Do not remove or reload the extension** once registered—removing an unpacked extension clears local registration and registers a duplicate tamper entry on the proctor dashboard.
 
-### Step 5: Initial Setup & Verification
+---
 
-1. Verify that the **InnoGuard** extension card is visible and enabled in your extensions list.
-2. Complete the initial registration prompt if prompted by entering your assigned Team/Device identifier.
-3. Ensure all background permissions are granted so the telemetry loop can initialize properly.
 
-## 🛠️ Troubleshooting & Support
-
-If you encounter issues during initialization or notice service worker errors:
-
-* Ensure your network connection allows outgoing `POST` requests to Google Apps Script endpoints.
-* Verify that Google Chrome is updated to the latest stable release.
-* Contact an onsite technical proctor immediately if your extension fails to generate a valid registration ID.
