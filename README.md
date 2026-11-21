@@ -13,7 +13,7 @@
 
 ## 🌐 Pre-Approved Competition Domains
 By default, participants may access:
-* **Search:** `google.com/search`, `duckduckgo.com`
+* **Search:** `google.com/search`
 * **Code & Hosting:** `github.com`, `codepen.io`, `jsfiddle.net`, `stackblitz.com`, `vercel.app`, `netlify.app`
 * **AI Assistants:** `chatgpt.com`, `claude.ai`, `anthropic.com`, `gemini.google.com`
 
