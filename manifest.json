@@ -3,6 +3,12 @@
   "name": "InnoCode Strict Guardian",
   "version": "2.1",
   "description": "Chrome proctoring, whitelist enforcement, and telemetry extension.",
+  "icons": {
+    "16": "innoguard.png",
+    "32": "innoguard.png",
+    "48": "innoguard.png",
+    "128": "innoguard.png"
+  },
   "permissions": [
     "tabs",
     "activeTab",
@@ -20,7 +26,13 @@
     "service_worker": "background.js"
   },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+	"16": "innoguard.png",
+	"32": "innoguard.png",
+	"48": "innoguard.png",
+	"128": "innoguard.png"
+    }
   },
   "web_accessible_resources": [
     {
@@ -28,5 +40,4 @@
       "matches": ["<all_urls>"]
     }
   ]
-  
 }

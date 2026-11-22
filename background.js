@@ -1,10 +1,10 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzwGYoLXlCWSKZUckf-EUFXyN5sNynQogddvlm5h8bcivjUsPyfHSzDO5ie7zagRHG5Kg/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx9lkWfoPi5p-e6A23a4Y0K6UZHmJitB7iJSFmtwB08lwaINMGEN0C4P9QwqsXCNLSrPw/exec";
 
 let lastCheckTime = 0;
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") {
-    chrome.storage.local.set({ deviceName: "Unregistered-Laptop", domainLogs: [], isDisqualified: false });
+    chrome.storage.local.set({ roomCode: "", deviceName: "Unregistered-Laptop", domainLogs: [], isDisqualified: false });
     chrome.tabs.create({ url: chrome.runtime.getURL("popup.html") });
   }
   initExtension();
@@ -29,7 +29,6 @@ chrome.alarms.get("statusCheck", (alarm) => {
 
 function initExtension() {
   chrome.alarms.create("statusCheck", { delayInMinutes: 0.05, periodInMinutes: 1 });
-  // Run first telemetry upload 15 seconds after install/reload, then every 2-5 mins
   chrome.alarms.create("telemetryUpload", { delayInMinutes: 0.25 });
   updateWhitelistRules();
   checkDeviceStatus();
@@ -71,7 +70,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }
   }
 
-  // Log whenever a new HTTP/HTTPS URL is committed or finishes loading
   if ((changeInfo.url || changeInfo.status === 'complete') && currentUrl.startsWith('http')) {
     try {
       const urlObj = new URL(currentUrl);
@@ -79,7 +77,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
       chrome.storage.local.get(['domainLogs'], (result) => {
         let logs = result.domainLogs || [];
         const lastEntry = logs[logs.length - 1];
-        // Avoid logging the exact same domain twice in a row within the same minute
         const nowTime = new Date().toLocaleTimeString();
         if (!lastEntry || lastEntry.domain !== hostname || lastEntry.time !== nowTime) {
           logs.push({ time: nowTime, domain: hostname });
@@ -90,6 +87,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     } catch (e) {}
   }
 });
+
 // Single unified alarm listener
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "statusCheck" || alarm.name === "fastUnlockCheck") {
@@ -101,9 +99,8 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 });
 
 function triggerTelemetryUpload() {
-  chrome.storage.local.get(['deviceName', 'domainLogs'], (data) => {
-    // Skip uploading ghost telemetry before participant registers their team name
-    if (!data.deviceName || data.deviceName === "Unregistered-Laptop") {
+  chrome.storage.local.get(['roomCode', 'deviceName', 'domainLogs'], (data) => {
+    if (!data.roomCode || !data.deviceName || data.deviceName === "Unregistered-Laptop") {
       scheduleNextTelemetryAlarm();
       return;
     }
@@ -123,6 +120,7 @@ function triggerTelemetryUpload() {
         const validImage = (!captureErr && dataUrl) ? dataUrl : null;
 
         const payload = {
+          roomCode: data.roomCode,
           deviceName: data.deviceName,
           filename: `${new Date().toTimeString().split(' ')[0].replace(/:/g, '-')}.jpg`,
           image: validImage,
@@ -168,56 +166,80 @@ async function updateWhitelistRules() {
 }
 
 function checkDeviceStatus() {
-  chrome.storage.local.get(['deviceName', 'isDisqualified'], (data) => {
-    // Do not create an Unregistered-Laptop row before setup finishes
-    if (!data.deviceName || data.deviceName === "Unregistered-Laptop") return;
+  chrome.storage.local.get(['roomCode', 'deviceName', 'isDisqualified'], (data) => {
+    if (!data.roomCode || !data.deviceName || data.deviceName === "Unregistered-Laptop") return;
 
-    const payload = {
-      deviceName: data.deviceName,
-      heartbeatOnly: true
-    };
+    chrome.windows.getLastFocused((win) => {
+      const isChromeFocused = !chrome.runtime.lastError && win && win.focused;
 
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    })
-    .then(res => res.json())
-    .then(resData => {
-      if (resData && resData.command === "SHUTDOWN") {
-        chrome.storage.local.set({ isDisqualified: true });
-        enforceShutdown();
-        chrome.alarms.create("fastUnlockCheck", { delayInMinutes: 0.08 });
-      } else if (resData && resData.command === "CONTINUE") {
-        const wasDisqualified = data.isDisqualified;
-        chrome.storage.local.set({ isDisqualified: false });
-        chrome.alarms.clear("fastUnlockCheck");
-        if (wasDisqualified) {
-          releaseShutdown();
-        }
+      if (!isChromeFocused && !data.isDisqualified) {
+        console.log("Browser unfocused (user in another window/browser) — heartbeat paused.");
+        return;
       }
-    })
-    .catch(err => console.error("Heartbeat check failed:", err));
+
+      const payload = {
+        roomCode: data.roomCode,
+        deviceName: data.deviceName,
+        heartbeatOnly: true
+      };
+
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(resData => {
+        if (resData && resData.command === "SHUTDOWN") {
+          chrome.storage.local.set({ isDisqualified: true });
+          enforceShutdown();
+          chrome.alarms.create("fastUnlockCheck", { delayInMinutes: 0.08 });
+        } else if (resData && resData.command === "CONTINUE") {
+          const wasDisqualified = data.isDisqualified;
+          chrome.storage.local.set({ isDisqualified: false });
+          chrome.alarms.clear("fastUnlockCheck");
+          if (wasDisqualified) {
+            releaseShutdown();
+          }
+        }
+      })
+      .catch(err => console.error("Heartbeat check failed:", err));
+    });
   });
 }
 
 function enforceShutdown() {
   const dqUrl = chrome.runtime.getURL("disqualified.html");
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach(tab => {
-      if (tab.url && !tab.url.startsWith("chrome://") && tab.url !== dqUrl) {
-        chrome.tabs.update(tab.id, { url: dqUrl });
-      }
+  chrome.storage.local.get(['savedTabs'], (res) => {
+    const savedTabs = res.savedTabs || {};
+
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        if (tab.url && !tab.url.startsWith("chrome://") && tab.url !== dqUrl) {
+          // Record the original URL before locking the tab
+          if (!tab.url.startsWith("chrome-extension://")) {
+            savedTabs[tab.id] = tab.url;
+          }
+          chrome.tabs.update(tab.id, { url: dqUrl });
+        }
+      });
+      chrome.storage.local.set({ savedTabs });
     });
   });
 }
 
 function releaseShutdown() {
   const dqUrl = chrome.runtime.getURL("disqualified.html");
-  chrome.tabs.query({}, (tabs) => {
-    tabs.forEach(tab => {
-      if (tab.url === dqUrl) {
-        chrome.tabs.update(tab.id, { url: "https://www.google.com/search?q=InnoCode" });
-      }
+  chrome.storage.local.get(['savedTabs'], (res) => {
+    const savedTabs = res.savedTabs || {};
+
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach(tab => {
+        if (tab.url === dqUrl) {
+          const originalUrl = savedTabs[tab.id] || "https://www.google.com/search?q=InnoCode";
+          chrome.tabs.update(tab.id, { url: originalUrl });
+        }
+      });
+      chrome.storage.local.remove('savedTabs');
     });
   });
 }
